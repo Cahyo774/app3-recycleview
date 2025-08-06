@@ -21,6 +21,12 @@ class StudentAdapter(
 
     private var filteredList: MutableList<Student> = studentList.toMutableList()
 
+    fun removeItem(position: Int) {
+        filteredList.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
+
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvName: TextView = itemView.findViewById(R.id.tvNama)
         val tvNis: TextView = itemView.findViewById(R.id.tvNis)
