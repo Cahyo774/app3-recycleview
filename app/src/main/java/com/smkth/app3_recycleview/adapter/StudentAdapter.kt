@@ -4,18 +4,22 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.view.*
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.smkth.app3_recycleview.DetailActivity
 import com.smkth.app3_recycleview.R
 import com.smkth.app3_recycleview.model.Student
-
+import java.util.*
 
 class StudentAdapter(
     private val context: Context,
     private val studentList: List<Student>
-) : RecyclerView.Adapter<StudentAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<StudentAdapter.ViewHolder>(), Filterable {
+
+    private var filteredList: MutableList<Student> = studentList.toMutableList()
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvName: TextView = itemView.findViewById(R.id.tvNama)
@@ -28,14 +32,13 @@ class StudentAdapter(
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int = studentList.size
+    override fun getItemCount(): Int = filteredList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val student = studentList[position]
+        val student = filteredList[position]
         holder.tvName.text = student.nama
         holder.tvNis.text = "NIS: ${student.nis}"
         holder.tvKelas.text = "Kelas: ${student.kelas}"
-
 
         holder.itemView.setOnClickListener {
             Toast.makeText(context, "Memilih ${student.nama}", Toast.LENGTH_SHORT).show()
@@ -52,6 +55,32 @@ class StudentAdapter(
                 }
                 .setNegativeButton("Batal", null)
                 .show()
+        }
+    }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(query: CharSequence?): FilterResults {
+                val keyword = query.toString().lowercase(Locale.ROOT)
+
+                filteredList = if (keyword.isEmpty()) {
+                    studentList.toMutableList()
+                } else {
+                    studentList.filter {
+                        it.nama.lowercase(Locale.ROOT).contains(keyword)
+                    }.toMutableList()
+                }
+
+                val results = FilterResults()
+                results.values = filteredList
+                return results
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            override fun publishResults(p0: CharSequence?, results: FilterResults?) {
+                filteredList = results?.values as MutableList<Student>
+                notifyDataSetChanged()
+            }
         }
     }
 }
